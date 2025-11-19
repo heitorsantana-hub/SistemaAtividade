@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head><meta charset="utf-8"><title>Lista de Materiais</title></head>
+  <body>
+    <h1>Lista de Materiais</h1>
+    <table border="1">
+      <tr><th>ID</th><th>Nome</th><th>Fornecedor</th><th>Qtd</th><th>Preço</th></tr>
+      <% materials.forEach(item => { %>
+        <tr>
+          <td><%= item.ID %></td>
+          <td><%= item.NOME %></td>
+          <td><%= item.FORNECEDOR %></td>
+          <td><%= item.QUANTIDADE %></td>
+          <td><%= item.PRECO %></td>
+        </tr>
+      <% }) %>
+    </table>
+  </body>
+</html>

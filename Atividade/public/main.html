@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sistema de Estoque - Sem JS</title>
+  
+  <style>
+    :root{--bg:#f6f7fb;--card:#fff;--accent:#2a1c5e;--muted:#666}
+    *{box-sizing:border-box;font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif}
+    body{margin:0;background:linear-gradient(180deg,#f9f8ff, #f6f7fb);color:#111}
+    header{background:var(--accent);color:#fff;padding:18px 20px; text-align: center;}
+    .container{max-width:980px;margin:26px auto;padding:18px}
+    .card{background:var(--card);padding:18px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.05);margin-bottom:18px}
+    h1,h2{margin:0 0 12px}
+    form{display:grid;gap:10px}
+    label{font-size:0.95rem;color:var(--muted)}
+    input[type=text], input[type=number], input[type=password], input[type=email], select {padding:10px;border:1px solid #ddd;border-radius:6px}
+    .row{display:flex;gap:10px}
+    .row .col{flex:1}
+    nav {
+      background: #0e2005;
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      padding: 10px 0;
+    }
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 500;
+      padding: 8px 14px;
+      border-radius: 6px;
+      transition: 0.2s;
+    }
+    nav a:hover {
+      background: rgba(255,255,255,0.15);
+    }
+    button{background:var(--accent);color:#fff;padding:10px 14px;border:0;border-radius:8px;cursor:pointer}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    th,td{padding:10px;border-bottom:1px solid #eee;text-align:left}
+    .muted{color:var(--muted);font-size:0.9rem}
+    .small{font-size:0.9rem}
+    .actions{display:flex;gap:8px}
+    .btn-danger{background:#cc2b2b}
+    .btn-outline{background:transparent;color:var(--accent);border:1px solid #e6d9f5}
+    footer{max-width:980px;margin:0 auto;padding:12px;color:var(--muted);font-size:0.9rem}
+    @media(
+      max-width:680px){
+        .row{flex-direction:column }
+        nav {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+
+    .tarefa-concluida {
+    text-decoration: line-through;
+    color: #888; /* Cinza */
+}
+  </style>
+
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>TaskFlow Solutions</h1>
+    </div>
+  </header>
+
+
+  <main class="container">
+
+    <section class="card" id="estoque">
+      <h2>Atividades</h2>
+    <!-- TABELA: O servidor deve inserir aqui as linhas com os dados reais. Abaixo há um exemplo estático. -->
+      <table aria-label="Lista de materiais">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Titulo</th>
+            <th>Status</th>
+            <th onclick="ordenarPorData()" style="cursor: pointer; user-select: none;">
+           Data Prevista <span id="seta-ordem">⇅</span>
+          </th>
+          </tr>
+        </thead>
+        <tbody id="tabelaMateriais">
+          <!-- SERVER: repetir uma <tr> por material -->
+          <!-- Exemplo estático: -->
+          <tr>
+            <td>1</td>
+            <td>Fazer Curso</td>
+            <td>
+              <input type="checkbox" id="check" name="check">  
+            </td>
+            <td>23/11/2025</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- CADASTRAR MATERIAL -->
+    <section class="card" id="cadastrar">
+      <h2>Cadastrar nova Atividade</h2>
+      <form method="post" action="/atividade/criar">
+        <label for="nome">Nome da atividade</label>
+        <input id="nome" name="nome" type="text" required />
+
+        <label for="data">Data de Conclusão</label>
+        <input id="data" name="data" type="date" />
+
+        <div class="row">
+          <div class="col" style="align-self:end;text-align:right">
+            <button type="submit">Cadastrar</button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+
+    <!-- FORMULÁRIO DE ATUALIZAÇÃO AVANÇADA (caso você prefira página separada) -->
+    <section class="card" id="atualizar">
+      <h2>Atualizar (página separada)</h2>
+      <form method="get" action="/atividade/edit">
+        <label for="edit-id">ID da Atividade</label>
+        <input id="edit-id" name="id" type="number" min="1" />
+        <div style="text-align:right;margin-top:6px"><button type="submit" class="btn-outline">Ir para edição</button></div>
+      </form>
+    </section>
+
+    <!-- EXCLUSÃO EM MASSA (opcional) -->
+    <section class="card" id="excluir-massa">
+      <h2>Excluir registro</h2>
+      <p class="muted">Também é possível excluir passando o ID no formulário abaixo.</p>
+      <form method="post" action="/atividade/delete">
+        <label for="del-id">ID do material a excluir</label>
+        <input id="del-id" name="id" type="number" min="1" />
+        <div style="text-align:right;margin-top:6px"><button type="submit" class="btn-danger">Excluir</button></div>
+      </form>
+    </section>
+
+  </main>
+
+  <footer>
+    <p style="text-align:center">Template simples sem JavaScript — o backend (servidor) precisa processar os forms e renderizar a lista.</p>
+  </footer>
+</body>
+</html>
+
+
+<script>
+  // Variáveis Globais
+  let listaTarefas = []; // Guarda os dados aqui para não perder
+  let ordemCrescente = true; // Controla se é do menor pro maior ou vice-versa
+
+  // 1. BUSCAR DADOS (Só faz isso uma vez)
+  fetch('/api/atividade')
+    .then(res => res.json())
+    .then(data => {
+      listaTarefas = data; // Salva os dados na memória
+      renderizarTabela();  // Desenha a tabela a primeira vez
+    })
+    .catch(err => console.error('Erro ao carregar:', err));
+
+
+  // 2. FUNÇÃO DE DESENHAR A TABELA (Reutilizável)
+  function renderizarTabela() {
+      const tbody = document.getElementById('tabelaMateriais');
+      
+      tbody.innerHTML = listaTarefas.map(item => {
+        // A. Formatação da Data
+        let dataFormatada = 'Sem data';
+        if (item.DATA_PREVISTA) {
+           const dataObj = new Date(item.DATA_PREVISTA);
+           dataFormatada = dataObj.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+        }
+
+        // B. Lógica visual e Checkbox
+        // VERIFIQUE SE NO SEU BANCO É 'STATS' OU 'concluida'
+        const statusBanco = item.concluida !== undefined ? item.concluida : item.STATS;
+        
+        const isChecked = statusBanco === 1 ? 'checked' : '';
+        const classeVisual = statusBanco === 1 ? 'tarefa-concluida' : '';
+
+        return `
+          <tr>
+            <td>${item.ID_ATIVIDADE}</td>
+            <td class="${classeVisual}" id="nome-${item.ID_ATIVIDADE}">
+                ${item.NOME}
+            </td>
+            <td style="text-align: center;">
+               <input 
+                 type="checkbox" 
+                 ${isChecked} 
+                 onchange="atualizarStatus(${item.ID_ATIVIDADE}, this)"
+                 style="cursor: pointer; width: 18px; height: 18px;"
+               >
+            </td>
+            <td>${dataFormatada}</td> 
+          </tr>
+        `;
+      }).join('');
+  }
+
+  // 3. FUNÇÃO DE ORDENAR (Chamada ao clicar no cabeçalho)
+  function ordenarPorData() {
+      listaTarefas.sort((a, b) => {
+          // Pega as datas (se for nulo, joga pro final usando uma data muito longe ou zero)
+          const dataA = a.DATA_PREVISTA ? new Date(a.DATA_PREVISTA).getTime() : 0;
+          const dataB = b.DATA_PREVISTA ? new Date(b.DATA_PREVISTA).getTime() : 0;
+
+          // Lógica de comparação
+          return ordemCrescente ? (dataA - dataB) : (dataB - dataA);
+      });
+
+      // Inverte a ordem para o próximo clique (se era Ascendente, vira Descendente)
+      ordemCrescente = !ordemCrescente;
+      
+      // Atualiza a setinha visual (opcional)
+      document.getElementById('seta-ordem').innerText = ordemCrescente ? '⬆' : '⬇';
+
+      // Redesenha a tabela com a nova ordem
+      renderizarTabela();
+  }
+
+  // 4. FUNÇÃO DO CHECKBOX (Mantida igual)
+  function atualizarStatus(id, checkboxElement) {
+    const novoStatus = checkboxElement.checked ? 1 : 0;
+    const textoNome = document.getElementById(`nome-${id}`);
+    
+    if (checkboxElement.checked) {
+        textoNome.classList.add('tarefa-concluida');
+    } else {
+        textoNome.classList.remove('tarefa-concluida');
+    }
+
+    // Atualiza também a lista local para a ordenação não "esquecer" o status
+    const itemLocal = listaTarefas.find(t => t.ID_ATIVIDADE === id);
+    if(itemLocal) {
+        // Se seu banco usa STATS, mude para itemLocal.STATS = novoStatus
+        if(itemLocal.concluida !== undefined) itemLocal.concluida = novoStatus;
+        else itemLocal.STATS = novoStatus;
+    }
+
+    fetch(`/api/atividade/${id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ concluida: novoStatus })
+    }).then(res => {
+       if (!res.ok) {
+            console.error('Erro no servidor');
+            alert('Erro ao salvar. Verifique o terminal do servidor.');
+            // Reverte o visual se deu erro
+            checkboxElement.checked = !checkboxElement.checked;
+            textoNome.classList.toggle('tarefa-concluida');
+        } else {
+            console.log('Salvo com sucesso!');
+        }
+    });
+  }
+</script>

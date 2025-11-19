@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sistema de Estoque</title>
+  <style>
+    :root{--bg:#f6f7fb;--card:#fff;--accent:#2a1c5e;--muted:#666}
+    *{box-sizing:border-box;font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif}
+    body{margin:0;background:linear-gradient(180deg,#f9f8ff, #f6f7fb);color:#111}
+    header{background:var(--accent);color:#fff;padding:18px 20px; text-align: center;}
+    .container{max-width:980px;margin:26px auto;padding:18px}
+    .card{background:var(--card);padding:18px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.05);margin-bottom:18px}
+    h1,h2{margin:0 0 12px}
+    form{display:grid;gap:10px}
+    label{font-size:0.95rem;color:var(--muted)}
+    input[type=text], input[type=number], input[type=password], input[type=email], select {padding:10px;border:1px solid #ddd;border-radius:6px}
+    .row{display:flex;gap:10px}
+    .row .col{flex:1}
+    nav {
+      background: #0e2005;
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      padding: 10px 0;
+    }
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 500;
+      padding: 8px 14px;
+      border-radius: 6px;
+      transition: 0.2s;
+    }
+    nav a:hover {
+      background: rgba(255,255,255,0.15);
+    }
+    button{background:var(--accent);color:#fff;padding:10px 14px;border:0;border-radius:8px;cursor:pointer}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    th,td{padding:10px;border-bottom:1px solid #eee;text-align:left}
+    .muted{color:var(--muted);font-size:0.9rem}
+    .small{font-size:0.9rem}
+    .actions{display:flex;gap:8px}
+    .btn-danger{background:#cc2b2b}
+    .btn-outline{background:transparent;color:var(--accent);border:1px solid #e6d9f5}
+    footer{max-width:980px;margin:0 auto;padding:12px;color:var(--muted);font-size:0.9rem}
+    @media(
+      max-width:680px){
+        .row{flex-direction:column }
+        nav {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>TaskFlow Solutions</h1>
+    </div>
+  </header>
+
+  <main class="container">  
+
+    <!-- LOGIN -->
+    <section class="card" id="login">
+      <h2>Login</h2>
+      <form method="POST" action="/login">
+        <label for="username">Email</label>
+        <input id="username" name="email" type="text" required autocomplete="username" />
+
+        <label for="password">Senha</label>
+        <input id="password" name="senha" type="password" required autocomplete="current-password" />
+
+        <div class="row">
+          <div class="col">
+            <label class="small"><input type="checkbox" name="remember"/> Manter conectado</label>
+          </div>
+          <div class="col" style="text-align:right">
+            <button type="submit">Entrar</button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+  </main>
+
+  <footer>
+    <p style="text-align:center">Template simples sem JavaScript — o backend (servidor) precisa processar os forms e renderizar a lista.</p>
+  </footer>
+</body>
+</html>
